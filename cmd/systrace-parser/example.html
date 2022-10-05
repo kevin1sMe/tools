@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head i18n-values="dir:textdirection;">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta charset="utf-8"/>
+<title>Android System Trace</title>
+<body>
+<!-- BEGIN TRACE -->
+  <script class="trace-data" type="application/text">
+# tracer: nop
+#
+# entries-in-buffer/entries-written: 80929/80929   #P:8
+          <idle>-0       (-------) [002] d..2   215.016854: sched_switch: prev_comm=swapper/2 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=rcuop/2 next_pid=33 next_prio=120
+         rcuog/0-14      (     14) [000] d..2   215.016856: sched_switch: prev_comm=rcuog/0 prev_pid=14 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+         rcuop/2-33      (     33) [002] d..2   215.016897: sched_switch: prev_comm=rcuop/2 prev_pid=33 prev_prio=120 prev_state=S ==> next_comm=swapper/2 next_pid=0 next_prio=120
+          <idle>-0       (-------) [000] d..1   215.016902: cpu_idle: state=0 cpu_id=0
+          <idle>-0       (-------) [002] d..1   215.016929: cpu_idle: state=0 cpu_id=2
+          <idle>-0       (-------) [004] dn.1   215.017010: cpu_idle: state=4294967295 cpu_id=4
+          <idle>-0       (-------) [004] d..2   215.017052: sched_switch: prev_comm=swapper/4 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=atrace next_pid=9803 next_prio=120
+  </script>
+<!-- END TRACE -->
+</body>
+</html>
