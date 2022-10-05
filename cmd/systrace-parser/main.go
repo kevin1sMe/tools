@@ -97,8 +97,10 @@ func ParseSysTrace(src, dest string) error {
 		res := s.Text()
 		fmt.Printf("file: %s html size:%d\n", src, len(res))
 
+		// 去掉第一个空行
+		trimNewline := strings.Replace(res, "\n", "", 1)
 		//将结果写文件
-		err = os.WriteFile(dest, []byte(res), 0644)
+		err = os.WriteFile(dest, []byte(trimNewline), 0644)
 		if err != nil {
 			log.Println("write output failed, ", err)
 		}
