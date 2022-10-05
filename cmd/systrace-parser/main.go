@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/gookit/color"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -77,6 +78,7 @@ func ParseSysTrace(src, dest string) error {
 		dest = src + ".out"
 	} else {
 		if err := os.MkdirAll(filepath.Dir(dest), os.ModePerm); err != nil {
+			color.Red.Printf("mkdir [%s] failed, %v", filepath.Dir(dest), err)
 			log.Fatalln(err)
 		}
 	}
@@ -104,10 +106,10 @@ func ParseSysTrace(src, dest string) error {
 		//将结果写文件
 		err = os.WriteFile(dest, []byte(trimNewline), 0644)
 		if err != nil {
-			log.Println("write output failed, ", err)
+			color.Red.Printf("write output failed, ", err)
 		}
-		fmt.Printf("[SUCC] create file: %s\n", dest)
 
+		color.Green.Printf("[SUCC] create file: %s\n", dest)
 	})
 	return err
 }
