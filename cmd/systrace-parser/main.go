@@ -50,15 +50,15 @@ func main() {
 
 func OutputFilename(filename, inputDir, outputDir string) string {
 	if inputDir == "." {
-		inputDir = "./"
+		inputDir = "." + string(os.PathSeparator)
 	}
 
 	if outputDir == "" {
 		outputDir = inputDir
 	}
 
-	if outputDir[len(outputDir)-1] != '/' {
-		outputDir += "/"
+	if outputDir[len(outputDir)-1] != os.PathSeparator {
+		outputDir += string(os.PathSeparator)
 	}
 
 	f := strings.Replace(filename, inputDir, outputDir, -1)
@@ -114,7 +114,7 @@ func TraverseDir(srcDir string, filterExt string) (results []string) {
 	}
 
 	for _, fi := range dir {
-		filename := fmt.Sprintf("%s/%s", srcDir, fi.Name())
+		filename := fmt.Sprintf("%s%s%s", srcDir, string(os.PathSeparator), fi.Name())
 		if fi.IsDir() { // 目录
 			results = append(results, TraverseDir(filename, filterExt)...)
 		} else {
