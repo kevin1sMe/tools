@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -26,7 +26,7 @@ var (
 )
 
 func main() {
-	// app.HelpFlag.Short('h')
+	kingpin.HelpFlag.Short('h')
 	kingpin.Version(version)
 	kingpin.Parse()
 
@@ -37,14 +37,12 @@ func main() {
 
 	// 目录模式
 	if *input_dir != "" {
-
-		// 去除原目录末尾可能的/
-		srcDir := path.Dir(*input_dir)
+		srcDir := filepath.Dir(*input_dir + string(os.PathSeparator) + "dump")
 		if *output_dir == "" { // 如果没有指定输出目录，使用input目录
 			*output_dir = *input_dir
 		}
 
-		destDir := path.Dir(*output_dir)
+		destDir := filepath.Dir(*output_dir + string(os.PathSeparator) + "dump")
 		log.Printf("trim dir ==> srcDir:%s, destDir:%s\n", srcDir, destDir)
 
 		// 遍历目录获取符合过滤条件的文件列表
@@ -63,10 +61,10 @@ func OutputFilename(filename, inputDir, outputDir string) string {
 	f := strings.Replace(filename, inputDir, outputDir, 1)
 	log.Println("after => filename:", filename, ", inputDir:", inputDir, ", outputDir:", outputDir, "f:", f)
 
-	filenameAll := path.Base(f)
-	fileExt := path.Ext(f)
-	output := fmt.Sprintf("%s%s%s%s", path.Dir(f), string(os.PathSeparator), filenameAll[0:len(filenameAll)-len(fileExt)], ".txt")
-	log.Println("after => path:", path.Dir(f), filenameAll, fileExt, ", output: ", output)
+	filenameAll := filepath.Base(f)
+	fileExt := filepath.Ext(f)
+	output := fmt.Sprintf("%s%s%s%s", filepath.Dir(f), string(os.PathSeparator), filenameAll[0:len(filenameAll)-len(fileExt)], ".txt")
+	log.Println("after => path:", filepath.Dir(f), filenameAll, fileExt, ", output: ", output)
 	return output
 }
 
@@ -78,7 +76,7 @@ func ParseSysTrace(src, dest string) error {
 	if dest == "" {
 		dest = src + ".out"
 	} else {
-		if err := os.MkdirAll(path.Dir(dest), os.ModePerm); err != nil {
+		if err := os.MkdirAll(filepath.Dir(dest), os.ModePerm); err != nil {
 			log.Fatalln(err)
 		}
 	}
@@ -108,6 +106,7 @@ func ParseSysTrace(src, dest string) error {
 		if err != nil {
 			log.Println("write output failed, ", err)
 		}
+		fmt.Printf("[SUCC] create file: %s\n", dest)
 
 	})
 	return err
@@ -124,7 +123,7 @@ func TraverseDir(srcDir string, filterExt string) (results []string) {
 		if fi.IsDir() { // 目录
 			results = append(results, TraverseDir(filename, filterExt)...)
 		} else {
-			fileSuffix := path.Ext(filename)
+			fileSuffix := filepath.Ext(filename)
 			if fileSuffix != filterExt {
 				log.Printf("not match, skip file:%s", filename)
 			} else {
