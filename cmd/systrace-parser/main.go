@@ -19,10 +19,10 @@ var version string
 
 var (
 	filename = kingpin.Flag("filename", "filename of Chrome's bookmarks").Short('f').String()
-	output   = kingpin.Flag("output", "output filename, append '.out' if empty").Short('o').String()
+	output   = kingpin.Flag("output", "output filename, append '.out' if empty").String()
 
 	input_dir  = kingpin.Flag("input_dir", "input directory").Short('i').String()
-	output_dir = kingpin.Flag("output_dir", "output directory").Short('d').String()
+	output_dir = kingpin.Flag("output_dir", "output directory").Short('o').String()
 )
 
 func main() {
@@ -37,38 +37,37 @@ func main() {
 
 	// 目录模式
 	if *input_dir != "" {
-		res := TraverseDir(*input_dir, ".html")
 
-		log.Println("============")
+		// 去除原目录末尾可能的/
+		srcDir := path.Dir(*input_dir)
+		if *output_dir == "" { // 如果没有指定输出目录，使用input目录
+			*output_dir = *input_dir
+		}
+
+		destDir := path.Dir(*output_dir)
+		log.Printf("trim dir ==> srcDir:%s, destDir:%s\n", srcDir, destDir)
+
+		// 遍历目录获取符合过滤条件的文件列表
+		res := TraverseDir(srcDir, ".html")
+		log.Println("-----------file list found begin ------")
 		log.Println(res)
+		log.Println("-----------file list found end   ------")
 		for _, r := range res {
-			dest := OutputFilename(r, *input_dir, *output_dir)
+			dest := OutputFilename(r, srcDir, destDir)
 			ParseSysTrace(r, dest)
 		}
 	}
 }
 
 func OutputFilename(filename, inputDir, outputDir string) string {
-	log.Println("filename:", filename, ", inputDir:", inputDir, ", outputDir:", outputDir)
-	if inputDir == "." {
-		inputDir = "." + string(os.PathSeparator)
-	}
-
-	if outputDir == "" {
-		outputDir = inputDir
-	}
-
-	if outputDir[len(outputDir)-1] != os.PathSeparator {
-		outputDir += string(os.PathSeparator)
-	}
-
-	log.Println("after => filename:", filename, ", inputDir:", inputDir, ", outputDir:", outputDir)
-	f := strings.Replace(filename, inputDir, outputDir, -1)
+	f := strings.Replace(filename, inputDir, outputDir, 1)
+	log.Println("after => filename:", filename, ", inputDir:", inputDir, ", outputDir:", outputDir, "f:", f)
 
 	filenameAll := path.Base(f)
 	fileExt := path.Ext(f)
-	log.Println("after => path:", path.Dir(f), filenameAll, fileExt)
-	return fmt.Sprintf("%s%s%s%s", path.Dir(f), string(os.PathSeparator), filenameAll[0:len(filenameAll)-len(fileExt)], ".txt")
+	output := fmt.Sprintf("%s%s%s%s", path.Dir(f), string(os.PathSeparator), filenameAll[0:len(filenameAll)-len(fileExt)], ".txt")
+	log.Println("after => path:", path.Dir(f), filenameAll, fileExt, ", output: ", output)
+	return output
 }
 
 // 解析一个systrace html文件并输出到指定位置
@@ -79,10 +78,12 @@ func ParseSysTrace(src, dest string) error {
 	if dest == "" {
 		dest = src + ".out"
 	} else {
-		os.MkdirAll(path.Dir(dest), os.ModePerm)
+		if err := os.MkdirAll(path.Dir(dest), os.ModePerm); err != nil {
+			log.Fatalln(err)
+		}
 	}
 
-	fmt.Printf("src:%s dest:%s\n", src, dest)
+	fmt.Printf("\nsrc:%s dest:%s\n", src, dest)
 
 	// 读取原始文件
 	f, err := os.Open(src)
@@ -123,12 +124,11 @@ func TraverseDir(srcDir string, filterExt string) (results []string) {
 		if fi.IsDir() { // 目录
 			results = append(results, TraverseDir(filename, filterExt)...)
 		} else {
-			log.Printf("文件：%s", filename)
 			fileSuffix := path.Ext(filename)
 			if fileSuffix != filterExt {
-				log.Printf("not match, skip 文件：%s", filename)
+				log.Printf("not match, skip file:%s", filename)
 			} else {
-				log.Printf("match, 文件：%s", filename)
+				log.Printf("match, file: %s", filename)
 				results = append(results, filename)
 			}
 		}
